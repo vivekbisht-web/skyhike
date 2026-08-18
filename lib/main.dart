@@ -1,45 +1,19 @@
 import 'package:flutter/material.dart';
+import 'screens/webview_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const SkyHikeApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class SkyHikeApp extends StatelessWidget {
+  const SkyHikeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sky Hike',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Sky Hike Home'),
+      debugShowCheckedModeBanner: false,
+      title: 'SkyHike',
+      home: const WebViewScreen(),
     );
   }
 }
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomeOPageState();
-}
-
-class _MyHomeOPageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Skyhike'),
-      ),
-      body: Center(
-        child: Text('Sky Hike!'),
-      ),
-    );
-  }
-}
-
