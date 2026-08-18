@@ -22,19 +22,21 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (value) {
-            setState(() {
-              progress = value / 100;
-            });
+            if (mounted) {
+              setState(() {
+                progress = value / 100;
+              });
+            }
           },
           onPageStarted: (url) {
-            debugPrint('Page started: $url');
+            debugPrint('Started: $url');
           },
           onPageFinished: (url) {
-            debugPrint('Page finished: $url');
+            debugPrint('Finished: $url');
           },
           onWebResourceError: (error) {
             debugPrint(
-              'WebView error: ${error.description}',
+              'WebView Error: ${error.description}',
             );
           },
         ),
@@ -44,21 +46,42 @@ class _WebViewScreenState extends State<WebViewScreen> {
       );
   }
 
+  Future<bool> handleBack() async {
+    if (await controller.canGoBack()) {
+      await controller.goBack();
+      return false;
+    }
+
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            WebViewWidget(
-              controller: controller,
-            ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
 
-            if (progress < 1.0)
-              LinearProgressIndicator(
-                value: progress,
+        final shouldExit = await handleBack();
+
+        if (shouldExit && mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              WebViewWidget(
+                controller: controller,
               ),
-          ],
+
+              if (progress < 1.0)
+                LinearProgressIndicator(
+                  value: progress,
+                ),
+            ],
+          ),
         ),
       ),
     );
