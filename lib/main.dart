@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'screens/webview_screen.dart';
 
 void main() {
-  runApp(const SkyHikeApp());
+  runApp(const PearlMarketplaceApp());
 }
 
-class SkyHikeApp extends StatelessWidget {
-  const SkyHikeApp({super.key});
+class PearlMarketplaceApp extends StatelessWidget {
+  const PearlMarketplaceApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'SkyHike',
+      title: 'PearlMarketplace',
       home: const WebViewScreen(),
     );
   }
