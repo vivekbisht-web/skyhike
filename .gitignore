@@ -12,6 +12,11 @@
 .swiftpm/
 migrate_working_dir/
 
+# Signing keys and keystores
+key.properties
+*.jks
+*.keystore
+
 # IntelliJ related
 *.iml
 *.ipr
