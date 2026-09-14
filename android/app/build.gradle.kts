@@ -15,7 +15,7 @@ plugins {
 }
 
 android {
-    namespace = "com.pearlorganisation.marketplace"
+    namespace = "com.pearl.marketplace"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -29,7 +29,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.pearlorganisation.marketplace"
+        applicationId = "com.pearl.marketplace"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

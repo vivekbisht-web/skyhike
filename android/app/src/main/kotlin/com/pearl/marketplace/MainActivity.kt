@@ -1,4 +1,4 @@
-package com.pearlorganisation.marketplace
+package com.pearl.marketplace
 
 import io.flutter.embedding.android.FlutterActivity
 
