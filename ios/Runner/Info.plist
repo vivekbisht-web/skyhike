@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>PearlMarketplace</string>
+	<string>Pearl Marketplace</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>PearlMarketplace</string>
+	<string>Pearl Marketplace</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -26,6 +26,27 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Pearl Marketplace requires camera access to take and upload photos of business documents and service verification materials.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pearl Marketplace requires photo library access to upload documents, profile pictures, and service portfolio images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Pearl Marketplace requires permission to save invoices, brochures, and receipts to your photo library.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Pearl Marketplace uses your location to discover verified service partners and providers in your area.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>tel</string>
+		<string>mailto</string>
+		<string>sms</string>
+		<string>https</string>
+		<string>http</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

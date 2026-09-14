@@ -1,89 +1,186 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../core/services/network_service.dart';
+import '../core/theme/app_theme.dart';
+import '../core/utils/url_handler.dart';
+import '../widgets/offline_view.dart';
 
 class WebViewScreen extends StatefulWidget {
-  const WebViewScreen({super.key});
+  final String initialUrl;
+  final Function(WebViewController controller)? onControllerCreated;
+  final VoidCallback? onOpenSaved;
+
+  const WebViewScreen({
+    super.key,
+    this.initialUrl = 'https://marketplace.pearlorganisation.in/',
+    this.onControllerCreated,
+    this.onOpenSaved,
+  });
 
   @override
-  State<WebViewScreen> createState() => _WebViewScreenState();
+  State<WebViewScreen> createState() => WebViewScreenState();
 }
 
-class _WebViewScreenState extends State<WebViewScreen> {
-  late final WebViewController controller;
+class WebViewScreenState extends State<WebViewScreen> {
+  late final WebViewController _controller;
+  double _progress = 0;
+  bool _isLoading = true;
+  bool _hasError = false;
+  String _currentUrl = '';
 
-  double progress = 0;
+  String get currentUrl => _currentUrl;
+  WebViewController get controller => _controller;
 
   @override
   void initState() {
     super.initState();
+    _currentUrl = widget.initialUrl;
+    _initWebViewController();
+  }
 
-    controller = WebViewController()
+  void _initWebViewController() {
+    _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(AppTheme.background)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (value) {
+          onProgress: (progress) {
             if (mounted) {
               setState(() {
-                progress = value / 100;
+                _progress = progress / 100.0;
+                _isLoading = progress < 100;
               });
             }
           },
           onPageStarted: (url) {
-            debugPrint('Started: $url');
+            if (mounted) {
+              setState(() {
+                _currentUrl = url;
+                _isLoading = true;
+                _hasError = false;
+              });
+            }
           },
           onPageFinished: (url) {
-            debugPrint('Finished: $url');
+            if (mounted) {
+              setState(() {
+                _currentUrl = url;
+                _isLoading = false;
+              });
+            }
           },
           onWebResourceError: (error) {
-            debugPrint(
-              'WebView Error: ${error.description}',
-            );
+            debugPrint('WebView resource error: ${error.description} (code: ${error.errorCode})');
+            // Only flag critical errors (e.g. host lookup failure, connection refused)
+            if (error.isForMainFrame ?? true) {
+              if (error.errorCode == -2 || error.errorCode == -6 || error.errorCode == -8) {
+                if (mounted) {
+                  setState(() {
+                    _hasError = true;
+                  });
+                }
+              }
+            }
+          },
+          onNavigationRequest: (NavigationRequest request) async {
+            final url = request.url;
+
+            // Handle special schemes (tel, mailto, whatsapp, sms, maps)
+            if (UrlHandler.isSpecialScheme(url)) {
+              await UrlHandler.launchExternal(url);
+              return NavigationDecision.prevent;
+            }
+
+            // Handle external domains outside pearl marketplace
+            if (!UrlHandler.isInternalUrl(url)) {
+              await UrlHandler.launchExternal(url);
+              return NavigationDecision.prevent;
+            }
+
+            return NavigationDecision.navigate;
           },
         ),
       )
-      ..loadRequest(
-        Uri.parse('https://marketplace.pearlorganisation.in/'),
-      );
+      ..loadRequest(Uri.parse(widget.initialUrl));
+
+    widget.onControllerCreated?.call(_controller);
   }
 
-  Future<bool> handleBack() async {
-    if (await controller.canGoBack()) {
-      await controller.goBack();
-      return false;
-    }
+  Future<void> loadUrl(String url) async {
+    _hasError = false;
+    await _controller.loadRequest(Uri.parse(url));
+  }
 
-    return true;
+  Future<void> reload() async {
+    _hasError = false;
+    await _controller.reload();
+  }
+
+  Future<bool> canGoBack() async {
+    return await _controller.canGoBack();
+  }
+
+  Future<void> goBack() async {
+    if (await canGoBack()) {
+      await _controller.goBack();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
+    final networkService = NetworkService();
 
-        final shouldExit = await handleBack();
-
-        if (shouldExit && mounted) {
-          Navigator.of(context).pop();
-        }
-      },
-      child: Scaffold(
-        body: SafeArea(
-          child: Stack(
-            children: [
-              WebViewWidget(
-                controller: controller,
-              ),
-
-              if (progress < 1.0)
-                LinearProgressIndicator(
-                  value: progress,
+    if (!networkService.isConnected || _hasError) {
+      return OfflineView(
+        onRetry: () async {
+          final isOnline = await networkService.checkConnection();
+          if (isOnline) {
+            setState(() {
+              _hasError = false;
+            });
+            reload();
+          } else {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Still offline. Please check your internet connection.'),
+                  behavior: SnackBarBehavior.floating,
                 ),
-            ],
+              );
+            }
+          }
+        },
+        onOpenSaved: widget.onOpenSaved,
+      );
+    }
+
+    return Stack(
+      children: [
+        RefreshIndicator(
+          color: AppTheme.accentBlue,
+          backgroundColor: AppTheme.surface,
+          onRefresh: reload,
+          child: WebViewWidget(
+            controller: _controller,
           ),
         ),
-      ),
+
+        // Progress Bar
+        if (_isLoading)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 3,
+              child: LinearProgressIndicator(
+                value: _progress > 0 ? _progress : null,
+                backgroundColor: Colors.transparent,
+                valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentBlue),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
